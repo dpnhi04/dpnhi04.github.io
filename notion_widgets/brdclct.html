@@ -1,0 +1,1529 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>BRDCLC &mdash; Bread Calculator to Compare and Scale Recipes.</title>
+    <meta name="viewport" content="width=device-width" />
+    <meta name="apple-mobile-web-app-title" content="BRDCLC">
+    <link rel="apple-touch-icon-precomposed" href="icon.png" />
+    <style media="screen">
+      html {
+        box-sizing: border-box;
+      }
+      *, *:before, *:after {
+        box-sizing: inherit;
+      }
+      body {
+        color: #34321C;
+        font-family: "Avenir Next", "Avenir", sans-serif;
+        width: 80%;
+        margin: 8% auto 8% auto;
+        background: #F7F7F0;
+        line-height: 1.4em;
+      }
+      @media only screen and (min-width: 320px) {
+        body {
+          max-width: 380px;
+        }
+      }
+      a {
+        color: inherit;
+        text-decoration: none;
+        border-bottom: 1px solid #A5A287;
+      }
+      #intro {
+        margin-top: 2em;
+      }
+      strong {
+        font-weight: 600;
+      }
+      #intro strong {
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      #intro ul {
+        padding-left: 0;
+        list-style: none;
+      }
+      .inputs label {
+        display: inline-block;
+        float: left;
+        font-weight: 600;
+        margin-bottom: 6px;
+        margin-top: 16px;
+      }
+      .inputs .volume-label {
+        cursor: pointer;
+        float: right;
+        display: inline-block;
+        font-size: 0.8em;
+        font-weight: normal;
+        color: #A5A287;
+        margin-bottom: 6px;
+        margin-top: 16px;
+        /*background: rgba(255, 255, 255, 0.1);*/
+        border: 1px solid rgba(225, 224, 215, 0.5);
+        border-radius: 100px;
+        padding: 0 10px;
+      }
+      .inputs .input-wrapper {
+        display: -webkit-box;
+        display: -moz-box;
+        display: -ms-flexbox;
+        display: -webkit-flex;
+        display: flex;
+        width: 100%;
+        background: #fff;
+        border: 1px solid rgb(225, 224, 215);
+        border-radius: 4px;
+      }
+      .input-wrapper.left {
+        width: 49%;
+        float: left;
+      }
+      .input-wrapper.right {
+        width: 49%;
+        float: right;
+      }
+      .inputs .input-wrapper input {
+        padding: 0.6em 0.3em 0.6em 0.6em;
+      }
+      .inputs .input-wrapper p {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        display: inline-block;
+        text-align: right;
+        padding: 0 0.6em 0 0;
+        margin: auto;
+        color: #A5A287;
+      }
+      .inputs .increment-button {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        width: 98px;
+        position: relative;
+        display: inline-block;
+        cursor: pointer;
+        border-right: 1px solid rgb(225, 224, 215);
+        text-align: center;
+        margin: 8px 0 8px 0;
+        line-height: 0;
+      }
+      .inputs .increment-button img {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        margin: auto;
+      }
+      .inputs input {
+        flex-grow: 1;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        min-width: 25%;
+        background: none;
+        color: inherit;
+        font-size: inherit;
+        font-family: inherit;
+        font-weight: 500;
+        text-align: right;
+        -webkit-appearance: none;
+        outline: none;
+        border: none;
+      }
+      /*Remove default incrementers from Chrome/Safari*/
+      .inputs input::-webkit-outer-spin-button,
+      .inputs input::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+      }
+      .inputs input.warning {
+        border-color: #E24F00;
+      }
+      header {
+        text-align: center;
+      }
+      h1 {
+        color: #E24F00;
+        text-transform: uppercase;
+        font-size: 0.8em;
+        letter-spacing: 0.4em;
+        margin-bottom: 2em;
+      }
+      h2 {
+        font-size: 1em;
+      }
+      ::selection {
+        background: rgb(225, 224, 215);
+      }
+      ::-moz-selection {
+        background: rgb(225, 224, 215);
+      }
+      .flour-icon {
+        background: #E24F00;
+        display: inline-block;
+        width: 72px;
+        height: 72px;
+        border-radius: 36px;
+      }
+      .flour-icon-image {
+        margin-top: 13px;
+        margin-left: -2px;
+        width: 48px;
+      }
+      .ingredients-button {
+        cursor: pointer;
+        margin-top: 1.4em;
+        /*color: #E24F00;*/
+        background: #fff;
+        text-align: center;
+        padding: 0.6em 0.3em 0.6em 0.6em;
+        font-weight: 600;
+        border-radius: 4px;
+        border: 1px solid rgb(225, 224, 215);
+      }
+      #modal {
+        display: -webkit-box;
+        display: -moz-box;
+        display: -ms-flexbox;
+        display: -webkit-flex;
+        display: flex;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0,0,0,0.5);
+        padding: 32px;
+        overflow-y: scroll;
+      }
+      .modal-panel {
+        flex-grow: 1;
+        margin: auto;
+        /*background: #fff;*/
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0px 4px 24px 0px rgba(0, 0, 0, 0.25);
+      }
+      @media only screen and (min-width: 320px) {
+        .modal-panel {
+          max-width: 380px;
+        }
+      }
+      .modal-panel form input[type=checkbox] {
+        float: left;
+        margin-right: 10px;
+      }
+      .modal-panel form label {
+        display: block;
+        margin-bottom: 0.4em;
+        font-weight: 600;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        -webkit-appearance: none;
+        outline: none;
+      }
+      .modal-panel form label:last-of-type {
+        margin-bottom: 0;
+      }
+      .modal-content {
+        padding: 32px;
+      }
+      .modal-buttongroup {
+        width: 100%;
+        border-top: 1px solid rgb(225, 224, 215);
+        text-align: right;
+      }
+      .modal-buttongroup input[type=button] {
+        font-family: inherit;
+        font-size: inherit;
+        cursor: pointer;
+        color: #E24F00;
+        background: transparent;
+        text-align: center;
+        padding: 12px 32px;
+        font-weight: 600;
+        -webkit-tap-highlight-color: rgba(0,0,0,0);
+        -webkit-appearance: none;
+        outline: none;
+        border: none;
+      }
+      .reset-footer {
+        margin-bottom: 4em;
+      }
+      .clearfix:after {
+      	visibility: hidden;
+      	display: block;
+      	font-size: 0;
+      	content: " ";
+      	clear: both;
+      	height: 0;
+      	}
+      * html .clearfix             { zoom: 1; } /* IE6 */
+      *:first-child+html .clearfix { zoom: 1; } /* IE7 */
+      .hidden {
+        display: none !important;
+      }
+      .noscrolly {
+        overflow: hidden !important;
+      }
+    </style>
+  </head>
+  <body class="hidden noscroll" id="body">
+
+    <header>
+      <div class="flour-icon">
+        <img class="flour-icon-image" src="noun_13673.svg" alt="">
+      </div>
+      <h1>Bread Calculator</h1>
+    </header>
+
+    <div class="inputs">
+      <div class="clearfix">
+        <label id="flour-label" for="flour"></label>
+        <p class="volume-label" id="flour-volume"></p>
+      </div>
+      <div class="input-wrapper full">
+        <div id="decrementer" class="increment-button" onClick="scale('down')">
+          <img src="minus.svg" alt="Decrement">
+        </div>
+        <div id="incrementer" class="increment-button" onClick="scale('up')">
+          <img src="plus.svg" alt="Increment">
+        </div>
+        <input tabindex="1" id="flour" type="number" name="flour" onClick="this.select();">
+        <p>g</p>
+      </div>
+
+      <div class="input-group clearfix">
+        <div class="clearfix">
+          <label id="water-label" for="water-grams"></label>
+          <p class="volume-label" id="water-volume"></p>
+        </div>
+        <div class="input-wrapper left">
+          <input tabindex="3" id="water" type="number" name="water" onClick="this.select();">
+          <p>%</p>
+        </div>
+        <div class="input-wrapper right">
+          <input tabindex="2" id="water-grams" type="number" name="water-grams" onClick="this.select();">
+          <p>g</p>
+        </div>
+      </div>
+
+      <div class="input-group clearfix hidden" id="milk-input-group">
+        <div class="clearfix">
+          <label id="milk-label" for="milk-grams"></label>
+          <p class="volume-label" id="milk-volume"></p>
+        </div>
+        <div class="input-wrapper left">
+          <input tabindex="3" id="milk" type="number" name="milk" onClick="this.select();">
+          <p>%</p>
+        </div>
+        <div class="input-wrapper right">
+          <input tabindex="2" id="milk-grams" type="number" name="milk-grams" onClick="this.select();">
+          <p>g</p>
+        </div>
+      </div>
+
+      <div class="input-group clearfix hidden" id="salt-input-group">
+        <div class="clearfix">
+          <label id="salt-label" for="salt-grams"></label>
+          <p class="volume-label" id="salt-volume"></p>
+        </div>
+        <div class="input-wrapper left">
+          <input tabindex="3" id="salt" type="number" name="salt" onClick="this.select();">
+          <p>%</p>
+        </div>
+        <div class="input-wrapper right">
+          <input tabindex="2" id="salt-grams" type="number" name="salt-grams" onClick="this.select();">
+          <p>g</p>
+        </div>
+      </div>
+
+      <div class="input-group clearfix hidden" id="yeast-input-group">
+        <div class="clearfix">
+          <label id="yeast-label" for="yeast-grams"></label>
+          <p class="volume-label" id="yeast-volume"></p>
+        </div>
+        <div class="input-wrapper left">
+          <input tabindex="3" id="yeast" type="number" name="yeast" onClick="this.select();">
+          <p>%</p>
+        </div>
+        <div class="input-wrapper right">
+          <input tabindex="2" id="yeast-grams" type="number" name="yeast-grams" onClick="this.select();">
+          <p>g</p>
+        </div>
+      </div>
+
+      <div class="input-group clearfix hidden" id="bakingpowder-input-group">
+        <div class="clearfix">
+          <label id="bakingpowder-label" for="bakingpowder-grams"></label>
+          <p class="volume-label" id="bakingpowder-volume"></p>
+        </div>
+        <div class="input-wrapper left">
+          <input tabindex="3" id="bakingpowder" type="number" name="bakingpowder" onClick="this.select();">
+          <p>%</p>
+        </div>
+        <div class="input-wrapper right">
+          <input tabindex="2" id="bakingpowder-grams" type="number" name="bakingpowder-grams" onClick="this.select();">
+          <p>g</p>
+        </div>
+      </div>
+
+      <div class="input-group clearfix hidden" id="leaven-input-group">
+        <div class="clearfix">
+          <label id="leaven-label" for="leaven-grams"></label>
+          <p class="volume-label" id="leaven-volume"></p>
+        </div>
+        <div class="input-wrapper left">
+          <input tabindex="3" id="leaven" type="number" name="leaven" onClick="this.select();">
+          <p>%</p>
+        </div>
+        <div class="input-wrapper right">
+          <input tabindex="2" id="leaven-grams" type="number" name="leaven-grams" onClick="this.select();">
+          <p>g</p>
+        </div>
+      </div>
+
+      <div class="input-group clearfix hidden" id="poolish-input-group">
+        <div class="clearfix">
+          <label id="poolish-label" for="poolish-grams"></label>
+          <p class="volume-label" id="poolish-volume"></p>
+        </div>
+        <div class="input-wrapper left">
+          <input tabindex="3" id="poolish" type="number" name="poolish" onClick="this.select();">
+          <p>%</p>
+        </div>
+        <div class="input-wrapper right">
+          <input tabindex="2" id="poolish-grams" type="number" name="poolish-grams" onClick="this.select();">
+          <p>g</p>
+        </div>
+      </div>
+
+      <div class="input-group clearfix hidden" id="starter-input-group">
+        <div class="clearfix">
+          <label id="starter-label" for="starter-grams"></label>
+          <p class="volume-label" id="starter-volume"></p>
+        </div>
+        <div class="input-wrapper left">
+          <input tabindex="3" id="starter" type="number" name="starter" onClick="this.select();">
+          <p>%</p>
+        </div>
+        <div class="input-wrapper right">
+          <input tabindex="2" id="starter-grams" type="number" name="starter-grams" onClick="this.select();">
+          <p>g</p>
+        </div>
+      </div>
+
+      <div class="input-group clearfix hidden" id="oil-input-group">
+        <div class="clearfix">
+          <label id="oil-label" for="oil-grams"></label>
+          <p class="volume-label" id="oil-volume"></p>
+        </div>
+        <div class="input-wrapper left">
+          <input tabindex="3" id="oil" type="number" name="oil" onClick="this.select();">
+          <p>%</p>
+        </div>
+        <div class="input-wrapper right">
+          <input tabindex="2" id="oil-grams" type="number" name="oil-grams" onClick="this.select();">
+          <p>g</p>
+        </div>
+      </div>
+
+      <div class="input-group clearfix hidden" id="sugar-input-group">
+        <div class="clearfix">
+          <label id="sugar-label" for="sugar-grams"></label>
+          <p class="volume-label" id="sugar-volume"></p>
+        </div>
+        <div class="input-wrapper left">
+          <input tabindex="3" id="sugar" type="number" name="sugar" onClick="this.select();">
+          <p>%</p>
+        </div>
+        <div class="input-wrapper right">
+          <input tabindex="2" id="sugar-grams" type="number" name="sugar-grams" onClick="this.select();">
+          <p>g</p>
+        </div>
+      </div>
+
+      <div class="input-group clearfix hidden" id="butter-input-group">
+        <div class="clearfix">
+          <label id="butter-label" for="butter-grams"></label>
+          <p class="volume-label" id="butter-volume"></p>
+        </div>
+        <div class="input-wrapper left">
+          <input tabindex="3" id="butter" type="number" name="butter" onClick="this.select();">
+          <p>%</p>
+        </div>
+        <div class="input-wrapper right">
+          <input tabindex="2" id="butter-grams" type="number" name="butter-grams" onClick="this.select();">
+          <p>g</p>
+        </div>
+      </div>
+
+      <div class="input-group clearfix hidden" id="eggs-input-group">
+        <div class="clearfix">
+          <label id="eggs-label" for="eggs-grams"></label>
+          <p class="volume-label" id="eggs-volume"></p>
+        </div>
+        <div class="input-wrapper left">
+          <input tabindex="3" id="eggs" type="number" name="eggs" onClick="this.select();">
+          <p>%</p>
+        </div>
+        <div class="input-wrapper right">
+          <input tabindex="2" id="eggs-grams" type="number" name="eggs-grams" onClick="this.select();">
+          <p>g</p>
+        </div>
+      </div>
+
+      <div class="input-group clearfix hidden" id="honey-input-group">
+        <div class="clearfix">
+          <label id="honey-label" for="honey-grams"></label>
+          <p class="volume-label" id="honey-volume"></p>
+        </div>
+        <div class="input-wrapper left">
+          <input tabindex="3" id="honey" type="number" name="honey" onClick="this.select();">
+          <p>%</p>
+        </div>
+        <div class="input-wrapper right">
+          <input tabindex="2" id="honey-grams" type="number" name="honey-grams" onClick="this.select();">
+          <p>g</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="ingredients-button" onclick="toggleIngredientsList()">Add/Remove Ingredients</div>
+
+    <div id="modal">
+      <div class="modal-panel">
+        <form method="post">
+          <div class="modal-content">
+            <input type="checkbox" name="ingredient" id="flour-checkbox" checked disabled/>
+            <label for="flour-checkbox">Flour</label>
+            <input type="checkbox" name="ingredient" id="water-checkbox" checked disabled/>
+            <label for="water-checkbox">Water</label>
+            <input type="checkbox" name="ingredient" id="milk-checkbox" />
+            <label for="milk-checkbox">Milk</label>
+            <input type="checkbox" name="ingredient" id="salt-checkbox" />
+            <label for="salt-checkbox">Salt</label>
+            <input type="checkbox" name="ingredient" id="yeast-checkbox" />
+            <label for="yeast-checkbox">Yeast</label>
+            <input type="checkbox" name="ingredient" id="bakingpowder-checkbox" />
+            <label for="bakingpowder-checkbox">Baking Powder</label>
+            <input type="checkbox" name="ingredient" id="leaven-checkbox" />
+            <label for="leaven-checkbox">Leaven</label>
+            <input type="checkbox" name="ingredient" id="poolish-checkbox" />
+            <label for="poolish-checkbox">Poolish</label>
+            <input type="checkbox" name="ingredient" id="starter-checkbox" />
+            <label for="starter-checkbox">Starter</label>
+            <input type="checkbox" name="ingredient" id="oil-checkbox" />
+            <label for="oil-checkbox">Oil</label>
+            <input type="checkbox" name="ingredient" id="sugar-checkbox" />
+            <label for="sugar-checkbox">Sugar</label>
+            <input type="checkbox" name="ingredient" id="butter-checkbox" />
+            <label for="butter-checkbox">Butter</label>
+            <input type="checkbox" name="ingredient" id="eggs-checkbox" />
+            <label for="eggs-checkbox">Eggs</label>
+            <input type="checkbox" name="ingredient" id="honey-checkbox" />
+            <label for="honey-checkbox">Honey</label>
+          </div>
+          <div class="modal-buttongroup">
+            <input type="button" value="OK" onClick="showAndHideInputs();toggleIngredientsList();" />
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="intro"></div>
+
+    <h2>Saving and Sharing</h2>
+
+    <p>The values you input above are saved in the URL so you can save or share a recipe. I use this to start my notes each time I make bread. E.g. <a href="http://brdclc.com/?flour=500&amp;water=80&amp;salt=2&amp;leaven=20">brdclc.com/?flour=500&amp;water=80&amp;salt=2&amp;leaven=20</a></p>
+
+    <h2>Baker&#8217;s Percentages</h2>
+
+    <p>Baker&#8217;s percentages represent the percentage of flour weight&#8212;not total dough weight.</p>
+
+    <h2>Weight Vs Volume Measurements</h2>
+
+    <p>Volume conversions are included because not everyone has a scale. They are inaccurate due to density, variation in standards, and human variation.</p>
+
+    <p>Fluid is accurately measurable by volume&#8212;so water should be&#8212;but the definition of a cup varies from place to place: 200 ml in Japan, 227.3 ml in Canada, 236.59 ml or 240 ml in the U.S., and 250 ml in Australia and New Zealand. There&#8217;s also Imperial Cups that come in at a whopping 284 ml. <strong>For water, I use the most common U.S. conversion of 236.59 ml per cup.</strong></p>
+
+    <p>All-purpose flour conversions vary by over 20% just for U.S cups. <strong>For flour, I use 125 g per cup</strong> as it&#8217;s an average conversion and multiplies evenly.</p>
+
+    <p><strong>For salt, I use 5 g per teaspoon</strong> which is reasonably accurate for kosher and sea salt and wildly inaccurate for table salt.</p>
+
+    <p>Leaven is the most yolo volume measurement&#8212;even if you assume it&#8217;s half flour and half water&#8212;the volume changes as it ferments. 200 grams is pretty close to a cup, though. And leaven is the most flexible ingredient.</p>
+
+    <p class="reset-footer"><a href="/">Reset Defaults</a></p>
+
+    <script type="text/javascript">
+      var defaultFlour = 1000
+      var defaultWater = 75
+      var defaultSalt = 2
+      var defaultLeaven = 20
+
+      if (document.location.search == "") {
+        updateQueryStringParam("flour", defaultFlour)
+        updateQueryStringParam("water", defaultWater)
+        updateQueryStringParam("salt", defaultSalt)
+        updateQueryStringParam("leaven", defaultLeaven)
+      }
+
+      // [Other] Pre-Ferment
+      // More than one flour type?
+      // seeds
+      // dried fruit
+      // porridge
+
+      var oneCupWater = 236.59
+      var oneCupFlourAP = 125
+      var oneCupMilk = 243.69
+      var oneTspKosherSalt = 5
+      var oneTspYeast = 3.5
+      var oneTspBakingPowder = 4
+      var oneTbspOil = 13.725
+      var oneCupSugar = 200 // this is a bit lol
+      var oneTbspButter = 14.125
+      var oneLargeEgg = 50
+      var oneCupHoney = 340
+      var oneCupLeaven = 200
+      var oneCupPoolish = 200
+      var oneTbspStarter = 50
+
+      var standardLoafWeight = 500
+      var standardPizzaWeight = 125
+      var minimumFactorOfStandard = 0.8
+      var gramsWater = 0
+      var gramsMilk = 0
+      var gramsSalt = 0
+      var gramsYeast = 0
+      var gramsBakingPowder = 0
+      var gramsOil = 0
+      var gramsSugar = 0
+      var gramsButter = 0
+      var gramsEggs = 0
+      var gramsHoney = 0
+      var gramsLeavenTotal = 0
+      var gramsPoolishTotal = 0
+      var gramsStarterTotal = 0
+
+      var inputFlourLabel = document.getElementById("flour-label")
+      var inputFlourVolume = document.getElementById("flour-volume")
+      var inputFlour = document.getElementById("flour")
+
+      var inputWaterLabel = document.getElementById("water-label")
+      var inputWaterVolume = document.getElementById("water-volume")
+      var inputWater = document.getElementById("water")
+      var inputWaterGrams = document.getElementById("water-grams")
+
+      var inputMilkLabel = document.getElementById("milk-label")
+      var inputMilkVolume = document.getElementById("milk-volume")
+      var inputMilk = document.getElementById("milk")
+      var inputMilkGrams = document.getElementById("milk-grams")
+
+      var inputSaltLabel = document.getElementById("salt-label")
+      var inputSaltVolume = document.getElementById("salt-volume")
+      var inputSalt = document.getElementById("salt")
+      var inputSaltGrams = document.getElementById("salt-grams")
+
+      var inputYeastLabel = document.getElementById("yeast-label")
+      var inputYeastVolume = document.getElementById("yeast-volume")
+      var inputYeast = document.getElementById("yeast")
+      var inputYeastGrams = document.getElementById("yeast-grams")
+
+      var inputBakingPowderLabel = document.getElementById("bakingpowder-label")
+      var inputBakingPowderVolume = document.getElementById("bakingpowder-volume")
+      var inputBakingPowder = document.getElementById("bakingpowder")
+      var inputBakingPowderGrams = document.getElementById("bakingpowder-grams")
+
+      var inputOilLabel = document.getElementById("oil-label")
+      var inputOilVolume = document.getElementById("oil-volume")
+      var inputOil = document.getElementById("oil")
+      var inputOilGrams = document.getElementById("oil-grams")
+
+      var inputSugarLabel = document.getElementById("sugar-label")
+      var inputSugarVolume = document.getElementById("sugar-volume")
+      var inputSugar = document.getElementById("sugar")
+      var inputSugarGrams = document.getElementById("sugar-grams")
+
+      var inputButterLabel = document.getElementById("butter-label")
+      var inputButterVolume = document.getElementById("butter-volume")
+      var inputButter = document.getElementById("butter")
+      var inputButterGrams = document.getElementById("butter-grams")
+
+      var inputEggsLabel = document.getElementById("eggs-label")
+      var inputEggsVolume = document.getElementById("eggs-volume")
+      var inputEggs = document.getElementById("eggs")
+      var inputEggsGrams = document.getElementById("eggs-grams")
+
+      var inputHoneyLabel = document.getElementById("honey-label")
+      var inputHoneyVolume = document.getElementById("honey-volume")
+      var inputHoney = document.getElementById("honey")
+      var inputHoneyGrams = document.getElementById("honey-grams")
+
+      var inputLeavenLabel = document.getElementById("leaven-label")
+      var inputLeavenVolume = document.getElementById("leaven-volume")
+      var inputLeaven = document.getElementById("leaven")
+      var inputLeavenGrams = document.getElementById("leaven-grams")
+
+      var inputPoolishLabel = document.getElementById("poolish-label")
+      var inputPoolishVolume = document.getElementById("poolish-volume")
+      var inputPoolish = document.getElementById("poolish")
+      var inputPoolishGrams = document.getElementById("poolish-grams")
+
+      var inputStarterLabel = document.getElementById("starter-label")
+      var inputStarterVolume = document.getElementById("starter-volume")
+      var inputStarter = document.getElementById("starter")
+      var inputStarterGrams = document.getElementById("starter-grams")
+
+      var milkCheckbox = document.getElementById("milk-checkbox")
+      var milkInputGroup = document.getElementById("milk-input-group")
+      var saltCheckbox = document.getElementById("salt-checkbox")
+      var saltInputGroup = document.getElementById("salt-input-group")
+      var yeastCheckbox = document.getElementById("yeast-checkbox")
+      var yeastInputGroup = document.getElementById("yeast-input-group")
+      var bakingPowderCheckbox = document.getElementById("bakingpowder-checkbox")
+      var bakingPowderInputGroup = document.getElementById("bakingpowder-input-group")
+      var oilCheckbox = document.getElementById("oil-checkbox")
+      var oilInputGroup = document.getElementById("oil-input-group")
+      var sugarCheckbox = document.getElementById("sugar-checkbox")
+      var sugarInputGroup = document.getElementById("sugar-input-group")
+      var butterCheckbox = document.getElementById("butter-checkbox")
+      var butterInputGroup = document.getElementById("butter-input-group")
+      var eggsCheckbox = document.getElementById("eggs-checkbox")
+      var eggsInputGroup = document.getElementById("eggs-input-group")
+      var honeyCheckbox = document.getElementById("honey-checkbox")
+      var honeyInputGroup = document.getElementById("honey-input-group")
+      var leavenCheckbox = document.getElementById("leaven-checkbox")
+      var leavenInputGroup = document.getElementById("leaven-input-group")
+      var poolishCheckbox = document.getElementById("poolish-checkbox")
+      var poolishInputGroup = document.getElementById("poolish-input-group")
+      var starterCheckbox = document.getElementById("starter-checkbox")
+      var starterInputGroup = document.getElementById("starter-input-group")
+
+      var intro = document.getElementById("intro")
+
+      if (getParameterByName("flour") != null) {
+        inputFlour.value = getParameterByName("flour")
+      }
+
+      if (getParameterByName("water") != null) {
+        inputWater.value = getParameterByName("water")
+      }
+
+      if (getParameterByName("milk") == 0 || getParameterByName("milk") == null) {
+        milkCheckbox.checked = false
+      } else {
+        milkCheckbox.checked = true
+        inputMilk.value = getParameterByName("milk")
+      }
+
+      if (getParameterByName("salt") == 0 || getParameterByName("salt") == null) {
+        saltCheckbox.checked = false
+      } else {
+        saltCheckbox.checked = true
+        inputSalt.value = getParameterByName("salt")
+      }
+
+      if (getParameterByName("yeast") == 0 || getParameterByName("yeast") == null) {
+        yeastCheckbox.checked = false
+      } else {
+        yeastCheckbox.checked = true
+        inputYeast.value = getParameterByName("yeast")
+      }
+
+      if (getParameterByName("bakingpowder") == 0 || getParameterByName("bakingpowder") == null) {
+        bakingPowderCheckbox.checked = false
+      } else {
+        bakingPowderCheckbox.checked = true
+        inputBakingPowder.value = getParameterByName("bakingpowder")
+      }
+
+      if (getParameterByName("oil") == 0 || getParameterByName("oil") == null) {
+        oilCheckbox.checked = false
+      } else {
+        oilCheckbox.checked = true
+        inputOil.value = getParameterByName("oil")
+      }
+
+      if (getParameterByName("sugar") == 0 || getParameterByName("sugar") == null) {
+        sugarCheckbox.checked = false
+      } else {
+        sugarCheckbox.checked = true
+        inputSugar.value = getParameterByName("sugar")
+      }
+
+      if (getParameterByName("butter") == 0 || getParameterByName("butter") == null) {
+        butterCheckbox.checked = false
+      } else {
+        butterCheckbox.checked = true
+        inputButter.value = getParameterByName("butter")
+      }
+
+      if (getParameterByName("eggs") == 0 || getParameterByName("eggs") == null) {
+        eggsCheckbox.checked = false
+      } else {
+        eggsCheckbox.checked = true
+        inputEggs.value = getParameterByName("eggs")
+      }
+
+      if (getParameterByName("honey") == 0 || getParameterByName("honey") == null) {
+        honeyCheckbox.checked = false
+      } else {
+        honeyCheckbox.checked = true
+        inputHoney.value = getParameterByName("honey")
+      }
+
+      if (getParameterByName("leaven") == 0 || getParameterByName("leaven") == null) {
+        leavenCheckbox.checked = false
+      } else {
+        leavenCheckbox.checked = true
+        inputLeaven.value = getParameterByName("leaven")
+      }
+
+      if (getParameterByName("poolish") == 0 || getParameterByName("poolish") == null) {
+        poolishCheckbox.checked = false
+      } else {
+        poolishCheckbox.checked = true
+        inputPoolish.value = getParameterByName("poolish")
+      }
+
+      if (getParameterByName("starter") == 0 || getParameterByName("starter") == null) {
+        starterCheckbox.checked = false
+      } else {
+        starterCheckbox.checked = true
+        inputStarter.value = getParameterByName("starter")
+      }
+
+      function updateValues() {
+        var gramsFlour = Number(inputFlour.value)
+        gramsWater = (inputWater.value / 100) * gramsFlour
+        gramsMilk = (inputMilk.value / 100) * gramsFlour
+        gramsSalt = (inputSalt.value / 100) * gramsFlour
+        gramsYeast = (inputYeast.value / 100) * gramsFlour
+        gramsBakingPowder = (inputBakingPowder.value / 100) * gramsFlour
+        gramsOil = (inputOil.value / 100) * gramsFlour
+        gramsSugar = (inputSugar.value / 100) * gramsFlour
+        gramsButter = (inputButter.value / 100) * gramsFlour
+        gramsEggs = (inputEggs.value / 100) * gramsFlour
+        gramsHoney = (inputHoney.value / 100) * gramsFlour
+        gramsLeavenTotal = (inputLeaven.value / 100) * gramsFlour
+        var defaultLeavenHydration = 100
+        var gramsLeavenWater = gramsLeavenTotal * ((defaultLeavenHydration / 100) / 2)
+        var gramsLeavenFlour = gramsLeavenTotal - gramsLeavenWater
+        gramsPoolishTotal = (inputPoolish.value / 100) * gramsFlour
+        var defaultPoolishHydration = 100
+        var gramsPoolishWater = gramsPoolishTotal * ((defaultPoolishHydration / 100) / 2)
+        var gramsPoolishFlour = gramsPoolishTotal - gramsPoolishWater
+        gramsStarterTotal = (inputStarter.value / 100) * gramsFlour
+        var defaultStarterHydration = 100
+        var gramsStarterWater = gramsStarterTotal * ((defaultStarterHydration / 100) / 2)
+        var gramsStarterFlour = gramsStarterTotal - gramsStarterWater
+        var gramsTotalWater = gramsWater + gramsLeavenWater + gramsPoolishWater + gramsStarterWater
+        var gramsTotalFlour = gramsFlour + gramsLeavenFlour + gramsPoolishFlour + gramsStarterFlour
+
+        var totalWeight = gramsFlour + gramsWater + gramsMilk + gramsSalt + gramsYeast + gramsBakingPowder + gramsOil + gramsSugar + gramsButter + gramsEggs + gramsHoney + gramsLeavenTotal + gramsPoolishTotal + gramsStarterTotal
+        var totalHydration = (gramsTotalWater + gramsMilk) * (100 / gramsTotalFlour)
+        var murica = "title=\"🇺🇲\""
+
+        var flourVolume = gramsToMeasurement(gramsFlour, oneCupFlourAP, "cup", "cups")
+        var waterVolume = gramsToMeasurement(gramsWater, oneCupWater, "cup", "cups")
+        var milkVolume = gramsToMeasurement(gramsMilk, oneCupMilk, "cup", "cups")
+        var saltVolume = gramsToMeasurement(gramsSalt, oneTspKosherSalt, "tsp", "tsp")
+        var yeastVolume = gramsToMeasurement(gramsYeast, oneTspYeast, "tsp", "tsp")
+        var bakingPowderVolume = gramsToMeasurement(gramsBakingPowder, oneTspBakingPowder, "tsp", "tsp")
+        var oilVolume = gramsToMeasurement(gramsOil, oneTbspOil, "tbsp", "tbsp")
+        var sugarVolume = gramsToMeasurement(gramsSugar, oneCupSugar, "cup", "cups")
+        var butterVolume = gramsToMeasurement(gramsButter, oneTbspButter, "tbsp", "tbsp")
+        var eggsVolume = gramsToMeasurement(gramsEggs, oneLargeEgg, "large egg", "large eggs")
+        var honeyVolume = gramsToMeasurement(gramsHoney, oneCupHoney, "cup", "cups")
+        var leavenVolume = gramsToMeasurement(gramsLeavenTotal, oneCupLeaven, "cup", "cups")
+        var poolishVolume = gramsToMeasurement(gramsPoolishTotal, oneCupPoolish, "cup", "cups")
+        var starterVolume = gramsToMeasurement(gramsStarterTotal, oneTbspStarter, "tbsp", "tbsp")
+
+        inputFlourLabel.innerHTML = "Flour"
+        inputFlourVolume.innerHTML = flourVolume
+        inputFlourVolume.onclick = function() {
+          var newValue = prompt('Flour in Cups', flourVolume.replace(/[^0-9.]/g, ''))
+          if (newValue != null) {
+            inputFlour.value = newValue * oneCupFlourAP
+            updateValues()
+          }
+        };
+
+        inputWaterLabel.innerHTML = "Water"
+        inputWaterVolume.innerHTML = waterVolume
+        inputWaterVolume.onclick = function() {
+          var newValue = prompt('Water in Cups', waterVolume.replace(/[^0-9.]/g, ''))
+          if (newValue != null) {
+            inputWater.value = (Math.round(((newValue * oneCupWater)/inputFlour.value)*100*100)/100)
+            updateQueryStringParam("water", inputWater.value)
+            updateValues()
+          }
+        };
+
+        inputMilkLabel.innerHTML = "Milk"
+        inputMilkVolume.innerHTML = milkVolume
+        inputMilkVolume.onclick = function() {
+          var newValue = prompt('Milk in Cups', milkVolume.replace(/[^0-9.]/g, ''))
+          if (newValue != null) {
+            inputMilk.value = (Math.round(((newValue * oneCupMilk)/inputFlour.value)*100*100)/100)
+            updateQueryStringParam("milk", inputMilk.value)
+            updateValues()
+          }
+        };
+
+        inputSaltLabel.innerHTML = "Salt"
+        inputSaltVolume.innerHTML = saltVolume
+        inputSaltVolume.onclick = function() {
+          var newValue = prompt('Salt in Teaspoons', saltVolume.replace(/[^0-9.]/g, ''))
+          if (newValue != null) {
+            inputSalt.value = (Math.round(((newValue * oneTspKosherSalt)/inputFlour.value)*100*100)/100)
+            updateQueryStringParam("salt", inputSalt.value)
+            updateValues()
+          }
+        };
+
+        inputYeastLabel.innerHTML = "Yeast"
+        inputYeastVolume.innerHTML = yeastVolume
+        inputYeastVolume.onclick = function() {
+          var newValue = prompt('Yeast in Teaspoons', yeastVolume.replace(/[^0-9.]/g, ''))
+          if (newValue != null) {
+            inputYeast.value = (Math.round(((newValue * oneTspYeast)/inputFlour.value)*100*100)/100)
+            updateQueryStringParam("yeast", inputYeast.value)
+            updateValues()
+          }
+        };
+
+        inputBakingPowderLabel.innerHTML = "Baking Powder"
+        inputBakingPowderVolume.innerHTML = bakingPowderVolume
+        inputBakingPowderVolume.onclick = function() {
+          var newValue = prompt('Baking Powder in Teaspoons', bakingPowderVolume.replace(/[^0-9.]/g, ''))
+          if (newValue != null) {
+            inputBakingPowder.value = (Math.round(((newValue * oneTspBakingPowder)/inputFlour.value)*100*100)/100)
+            updateQueryStringParam("bakingpowder", inputBakingPowder.value)
+            updateValues()
+          }
+        };
+
+        inputOilLabel.innerHTML = "Oil"
+        inputOilVolume.innerHTML = oilVolume
+        inputOilVolume.onclick = function() {
+          var newValue = prompt('Oil in Tablespoons', oilVolume.replace(/[^0-9.]/g, ''))
+          if (newValue != null) {
+            inputOil.value = (Math.round(((newValue * oneTbspOil)/inputFlour.value)*100*100)/100)
+            updateQueryStringParam("oil", inputOil.value)
+            updateValues()
+          }
+        };
+
+        inputSugarLabel.innerHTML = "Sugar"
+        inputSugarVolume.innerHTML = sugarVolume
+        inputSugarVolume.onclick = function() {
+          var newValue = prompt('Sugar in Cups', sugarVolume.replace(/[^0-9.]/g, ''))
+          if (newValue != null) {
+            console.log(newValue)
+            inputSugar.value = (Math.round(((newValue * oneCupSugar)/inputFlour.value)*100*100)/100)
+            updateQueryStringParam("sugar", inputSugar.value)
+            updateValues()
+          }
+        };
+
+        inputButterLabel.innerHTML = "Butter"
+        inputButterVolume.innerHTML = butterVolume
+        inputButterVolume.onclick = function() {
+          var newValue = prompt('Butter in Tablespoons', butterVolume.replace(/[^0-9.]/g, ''))
+          if (newValue != null) {
+            inputButter.value = (Math.round(((newValue * oneTbspButter)/inputFlour.value)*100*100)/100)
+            updateQueryStringParam("butter", inputButter.value)
+            updateValues()
+          }
+        };
+
+        inputEggsLabel.innerHTML = "Eggs"
+        inputEggsVolume.innerHTML = eggsVolume
+        inputEggsVolume.onclick = function() {
+          var newValue = prompt('Large Eggs', eggsVolume.replace(/[^0-9.]/g, ''))
+          if (newValue != null) {
+            inputEggs.value = (Math.round(((newValue * oneLargeEgg)/inputFlour.value)*100*100)/100)
+            updateQueryStringParam("eggs", inputEggs.value)
+            updateValues()
+          }
+        };
+
+        inputHoneyLabel.innerHTML = "Honey"
+        inputHoneyVolume.innerHTML = honeyVolume
+        inputHoneyVolume.onclick = function() {
+          var newValue = prompt('Honey in Cups', honeyVolume.replace(/[^0-9.]/g, ''))
+          if (newValue != null) {
+            inputHoney.value = (Math.round(((newValue * oneCupHoney)/inputFlour.value)*100*100)/100)
+            updateQueryStringParam("honey", inputHoney.value)
+            updateValues()
+          }
+        };
+
+        inputLeavenLabel.innerHTML = "Leaven"
+        inputLeavenVolume.innerHTML = leavenVolume
+        inputLeavenVolume.onclick = function() {
+          var newValue = prompt('Leaven in Cups', leavenVolume.replace(/[^0-9.]/g, ''))
+          if (newValue != null) {
+            inputLeaven.value = (Math.round(((newValue * oneCupLeaven)/inputFlour.value)*100*100)/100)
+            updateQueryStringParam("leaven", inputLeaven.value)
+            updateValues()
+          }
+        };
+
+        inputPoolishLabel.innerHTML = "Poolish"
+        inputPoolishVolume.innerHTML = poolishVolume
+        inputPoolishVolume.onclick = function() {
+          var newValue = prompt('Poolish in Cups', poolishVolume.replace(/[^0-9.]/g, ''))
+          if (newValue != null) {
+            inputPoolish.value = (Math.round(((newValue * oneCupPoolish)/inputFlour.value)*100*100)/100)
+            updateQueryStringParam("poolish", inputPoolish.value)
+            updateValues()
+          }
+        };
+
+        inputStarterLabel.innerHTML = "Starter"
+        inputStarterVolume.innerHTML = starterVolume
+        inputStarterVolume.onclick = function() {
+          var newValue = prompt('Starter in Tablespoons', starterVolume.replace(/[^0-9.]/g, ''))
+          if (newValue != null) {
+            inputStarter.value = (Math.round(((newValue * oneTbspStarter)/inputFlour.value)*100*100)/100)
+            updateQueryStringParam("starter", inputStarter.value)
+            updateValues()
+          }
+        };
+
+        inputWaterGrams.value = Math.round(gramsWater)
+        inputMilkGrams.value = Math.round(gramsMilk)
+        inputSaltGrams.value = Math.round(gramsSalt)
+        inputYeastGrams.value = Math.round(gramsYeast)
+        inputBakingPowderGrams.value = Math.round(gramsBakingPowder)
+        inputOilGrams.value = Math.round(gramsOil)
+        inputSugarGrams.value = Math.round(gramsSugar)
+        inputButterGrams.value = Math.round(gramsButter)
+        inputEggsGrams.value = Math.round(gramsEggs)
+        inputHoneyGrams.value = Math.round(gramsHoney)
+        inputLeavenGrams.value = Math.round(gramsLeavenTotal)
+        inputPoolishGrams.value = Math.round(gramsPoolishTotal)
+        inputStarterGrams.value = Math.round(gramsStarterTotal)
+
+        var numberOfLoaves = Math.round(gramsFlour / standardLoafWeight)
+        var numberOfPizzas = Math.round(gramsFlour / standardPizzaWeight)
+
+        if ((gramsFlour / standardLoafWeight) < minimumFactorOfStandard) {
+          numberOfLoaves = 0
+        }
+
+        if ((gramsFlour / standardPizzaWeight) < minimumFactorOfStandard) {
+          numberOfPizzas = 0
+        }
+
+        var totalDoughWeightCopy = "<h2>Dough Weight</h2><p> Your total dough weight is <strong>" + Math.round(totalWeight).toLocaleString() + " g</strong>."
+        var hydrationCopy = "<h2>Hydration</h2><p>If using a 100% hydration pre-ferment, the total hydration is <strong>" + (Math.round(totalHydration*10)/10) + "%</strong>.</p>"
+        var loafWeight = (Math.round((totalWeight / numberOfLoaves)/5)*5).toLocaleString()
+        var pizzaWeight = (Math.round((totalWeight / numberOfPizzas)/5)*5).toLocaleString()
+
+        if (numberOfPizzas == 0) {
+         intro.innerHTML = totalDoughWeightCopy + "</p>" + hydrationCopy
+         }
+        if (numberOfPizzas == 1) {
+          intro.innerHTML = totalDoughWeightCopy + " You could make <strong>" + numberOfPizzas.toLocaleString() + " pizza</strong> at <strong>" + pizzaWeight + " g</strong>.</p>" + hydrationCopy
+        }
+        if (numberOfPizzas > 1) {
+          intro.innerHTML = totalDoughWeightCopy + " You could make <strong>" + numberOfPizzas.toLocaleString() + " pizzas</strong> at <strong>" + pizzaWeight + " g</strong> each.</p>" + hydrationCopy
+        }
+        if (numberOfLoaves == 1) {
+          intro.innerHTML = totalDoughWeightCopy + " You could make <strong>" + numberOfLoaves.toLocaleString() + " loaf</strong> at <strong>" + loafWeight + " g</strong> or <strong>" + numberOfPizzas.toLocaleString() + " pizzas</strong> at <strong>" + pizzaWeight + " g</strong> each.</p>" + hydrationCopy
+        }
+        if (numberOfLoaves > 1) {
+          intro.innerHTML = totalDoughWeightCopy + " You could make <strong>" + numberOfLoaves.toLocaleString() + " loaves</strong> at <strong>" + loafWeight + " g each</strong> or <strong>" + numberOfPizzas.toLocaleString() + " pizzas</strong> at <strong>" + pizzaWeight + " g</strong> each.</p>" + hydrationCopy
+        }
+
+        function gramsToMeasurement(grams, gramsInNewMeasurement, newMeasurementNameSingular, newMeasurementNamePlural) {
+          var newMeasurement = Math.round((grams / gramsInNewMeasurement)*100)/100
+          var wholeUnit = (newMeasurement).toString().split(".")[0]
+          var decimal = Math.round((newMeasurement % 1)*10)/10
+          var fraction = fractionFromDecimal(decimal)
+
+          if (parseInt(wholeUnit) == 0) {
+            wholeUnit = ""
+          } else {
+            wholeUnit = parseInt(wholeUnit).toLocaleString()
+          }
+          if (newMeasurement <= 1) {
+            var measurementName = newMeasurementNameSingular
+          } else {
+            var measurementName = newMeasurementNamePlural
+          }
+          if (newMeasurement == 0) {
+            var measurementName = newMeasurementNamePlural
+          }
+
+          // return (wholeUnit + " " + fraction + " " + measurementName).replace("  ", " ").trim()
+          return (newMeasurement + " " + measurementName).replace("  ", " ").trim()
+        }
+
+        // There's an issue with this where 1 floz first sometimes reads 1/1 floz.
+        // It's a rounding issue.
+        function mlToFlOz(ml) {
+          var floz = 29.5735
+          var flozDecimal = ml / floz
+          var flozWhole = flozDecimal.toString().split(".")[0]
+          if (flozWhole == 0) {
+            flozWhole = ""
+          }
+          var flozRemainder = Math.round((flozDecimal % 1)*10)/10
+          var flozRemainderAsFraction = fractionFromDecimal(flozRemainder)
+
+          if (flozRemainderAsFraction == "1/1") {
+            flozWhole += 1
+            flozRemainderAsFraction = ""
+          }
+
+          if (flozWhole == 0 && flozRemainderAsFraction == "") {
+            var flozLabel = ""
+          } else {
+            var flozLabel = " fl oz"
+          }
+
+          if (flozWhole >= 16) {
+            pints = Math.floor(flozWhole / 16)
+            remainingFlOz = flozWhole % 16
+            if (remainingFlOz == 0) {
+              flozWhole = pints + " pt "
+            } else {
+              flozWhole = pints + " pt " + remainingFlOz
+            }
+          }
+
+          return flozWhole + " " + flozRemainderAsFraction + flozLabel
+        }
+
+        function gramsToPoundsAndOunces(grams) {
+          var poundsDecimal = (grams * 0.035274) / 16
+          var poundsWhole = poundsDecimal.toString().split(".")[0]
+          var ouncesRemaining = Math.round(((poundsDecimal % 1) * 16) * 10) / 10
+          var ouncesWhole = ouncesRemaining.toString().split(".")[0]
+          var ouncesRemainingDecimal = ouncesRemaining % 1
+          var ouncesRemainingDecimalAsWhole = Math.round((ouncesRemaining % 1) * 10)
+          var ouncesRemainingFraction = fractionFromDecimal(Math.round(ouncesRemainingDecimal * 10) / 10)
+
+          if (ouncesWhole == 0 && ouncesRemainingFraction == "") {
+            var ouncesString = ""
+          } else if (ouncesWhole == 0 && ouncesRemainingFraction != "") {
+            var ouncesString = ouncesRemainingFraction + " oz"
+          } else if (ouncesWhole != 0 && ouncesRemainingFraction == "") {
+            var ouncesString = ouncesWhole + " oz"
+          } else {
+            var ouncesString = ouncesWhole + " " + ouncesRemainingFraction + " oz"
+          }
+
+          if (grams == 0) {
+            string = ""
+          } else if (poundsWhole > 0) {
+            var string = poundsWhole + " lb " + ouncesString
+            string = string.replace("  ", " ").trim();
+          } else {
+            var string = ouncesString
+            string = string.replace("  ", " ").trim();
+          }
+
+          return string
+        }
+
+      }
+
+      // http://jsfiddle.net/5QrhQ/5/
+      function fractionFromDecimal(fraction) {
+        var gcd = function(a, b) {
+          if (b < 0.0000001) return a;
+
+          return gcd(b, Math.floor(a % b));
+        };
+
+        var fraction = fraction;
+        var len = fraction.toString().length - 2;
+
+        var denominator = Math.pow(10, len);
+        var numerator = fraction * denominator;
+
+        var divisor = gcd(numerator, denominator);
+
+        numerator /= divisor;
+        denominator /= divisor;
+
+        if (fraction == 0) {
+          return ""
+        } else {
+          return Math.floor(numerator) + '/' + Math.floor(denominator);
+        }
+      }
+
+      updateValues()
+
+      inputFlour.addEventListener('input', function() {
+        updateQueryStringParam("flour", Number(inputFlour.value))
+        // inputWater.value = Math.round(((inputWaterGrams.value/inputFlour.value) * 100) * 10)/10
+        updateValues()
+      });
+      inputFlour.addEventListener('blur',function() {
+        if (inputFlour.value == "") {
+          inputFlour.value = 0
+        }
+        updateValues()
+      }, true);
+      inputWater.addEventListener('input', function() {
+        updateQueryStringParam("water", Number(inputWater.value))
+        updateValues()
+      });
+      inputWaterGrams.addEventListener('input', function() {
+        inputWater.value = (Math.round((inputWaterGrams.value/inputFlour.value)*100*10)/10)
+        updateQueryStringParam("water", Number(inputWater.value))
+        updateValues()
+      });
+      inputMilk.addEventListener('input', function() {
+        updateQueryStringParam("milk", Number(inputMilk.value))
+        updateValues()
+      });
+      inputMilkGrams.addEventListener('input', function() {
+        inputMilk.value = (Math.round((inputMilkGrams.value/inputFlour.value)*100*10)/10)
+        updateQueryStringParam("milk", Number(inputMilk.value))
+        updateValues()
+      });
+      inputSalt.addEventListener('input', function() {
+        updateQueryStringParam("salt", Number(inputSalt.value))
+        updateValues()
+      });
+      inputSaltGrams.addEventListener('input', function() {
+        inputSalt.value = (Math.round((inputSaltGrams.value/inputFlour.value)*100*10)/10)
+        updateQueryStringParam("salt", Number(inputSalt.value))
+        updateValues()
+      });
+      inputYeast.addEventListener('input', function() {
+        updateQueryStringParam("yeast", Number(inputYeast.value))
+        updateValues()
+      });
+      inputYeastGrams.addEventListener('input', function() {
+        inputYeast.value = (Math.round((inputYeastGrams.value/inputFlour.value)*100*10)/10)
+        updateQueryStringParam("yeast", Number(inputYeast.value))
+        updateValues()
+      });
+      inputBakingPowder.addEventListener('input', function() {
+        updateQueryStringParam("bakingpowder", Number(inputBakingPowder.value))
+        updateValues()
+      });
+      inputBakingPowderGrams.addEventListener('input', function() {
+        inputBakingPowder.value = (Math.round((inputBakingPowderGrams.value/inputFlour.value)*100*10)/10)
+        updateQueryStringParam("bakingpowder", Number(inputBakingPowder.value))
+        updateValues()
+      });
+      inputOil.addEventListener('input', function() {
+        updateQueryStringParam("oil", Number(inputOil.value))
+        updateValues()
+      });
+      inputOilGrams.addEventListener('input', function() {
+        inputOil.value = (Math.round((inputOilGrams.value/inputFlour.value)*100*10)/10)
+        updateQueryStringParam("oil", Number(inputOil.value))
+        updateValues()
+      });
+      inputSugar.addEventListener('input', function() {
+        updateQueryStringParam("sugar", Number(inputSugar.value))
+        updateValues()
+      });
+      inputSugarGrams.addEventListener('input', function() {
+        inputSugar.value = (Math.round((inputSugarGrams.value/inputFlour.value)*100*10)/10)
+        updateQueryStringParam("sugar", Number(inputSugar.value))
+        updateValues()
+      });
+      inputButter.addEventListener('input', function() {
+        updateQueryStringParam("butter", Number(inputButter.value))
+        updateValues()
+      });
+      inputButterGrams.addEventListener('input', function() {
+        inputButter.value = (Math.round((inputButterGrams.value/inputFlour.value)*100*10)/10)
+        updateQueryStringParam("butter", Number(inputButter.value))
+        updateValues()
+      });
+      inputEggs.addEventListener('input', function() {
+        updateQueryStringParam("eggs", Number(inputEggs.value))
+        updateValues()
+      });
+      inputEggsGrams.addEventListener('input', function() {
+        inputEggs.value = (Math.round((inputEggsGrams.value/inputFlour.value)*100*10)/10)
+        updateQueryStringParam("eggs", Number(inputEggs.value))
+        updateValues()
+      });
+      inputHoney.addEventListener('input', function() {
+        updateQueryStringParam("honey", Number(inputHoney.value))
+        updateValues()
+      });
+      inputHoneyGrams.addEventListener('input', function() {
+        inputHoney.value = (Math.round((inputHoneyGrams.value/inputFlour.value)*100*10)/10)
+        updateQueryStringParam("honey", Number(inputHoney.value))
+        updateValues()
+      });
+      inputLeaven.addEventListener('input', function() {
+        updateQueryStringParam("leaven", Number(inputLeaven.value))
+        updateValues()
+      });
+      inputLeavenGrams.addEventListener('input', function() {
+        inputLeaven.value = (Math.round((inputLeavenGrams.value/inputFlour.value)*100*10)/10)
+        updateQueryStringParam("leaven", Number(inputLeaven.value))
+        updateValues()
+      });
+      inputPoolish.addEventListener('input', function() {
+        updateQueryStringParam("poolish", Number(inputPoolish.value))
+        updateValues()
+      });
+      inputPoolishGrams.addEventListener('input', function() {
+        inputPoolish.value = (Math.round((inputPoolishGrams.value/inputFlour.value)*100*10)/10)
+        updateQueryStringParam("poolish", Number(inputPoolish.value))
+        updateValues()
+      });
+      inputStarter.addEventListener('input', function() {
+        updateQueryStringParam("starter", Number(inputStarter.value))
+        updateValues()
+      });
+      inputStarterGrams.addEventListener('input', function() {
+        inputStarter.value = (Math.round((inputStarterGrams.value/inputFlour.value)*100*10)/10)
+        updateQueryStringParam("starter", Number(inputStarter.value))
+        updateValues()
+      });
+
+      function scale(direction) {
+        var incrementAmount = 250
+
+        var currentValue = Number(inputFlour.value)
+        var nextIncrementUp = Math.ceil(Number(inputFlour.value)/incrementAmount)*incrementAmount
+        var nextIncrementDown = Math.floor(Number(inputFlour.value)/incrementAmount)*incrementAmount
+
+        if (direction == "up") {
+          if (currentValue % 250 == 0) {
+            inputFlour.value = nextIncrementUp + incrementAmount
+          } else {
+            inputFlour.value = nextIncrementUp
+          }
+          updateValues()
+        }
+        if (direction == "down") {
+          if (inputFlour.value > 0) {
+            if (currentValue % 250 == 0) {
+              inputFlour.value = nextIncrementDown - incrementAmount
+            } else {
+              inputFlour.value = nextIncrementDown
+            }
+            updateValues()
+          }
+        }
+        updateQueryStringParam("flour", Number(inputFlour.value))
+      }
+
+      function showAndHideInputs() {
+
+        if (milkCheckbox.checked == true) {
+          milkInputGroup.classList.remove("hidden");
+        } else {
+          milkInputGroup.classList.add("hidden");
+          inputMilk.value = 0
+          removeParameterByName("milk")
+          updateValues()
+        }
+
+        if (saltCheckbox.checked == true) {
+          saltInputGroup.classList.remove("hidden");
+        } else {
+          saltInputGroup.classList.add("hidden");
+          inputSalt.value = 0
+          removeParameterByName("salt")
+          updateValues()
+        }
+
+        if (yeastCheckbox.checked == true) {
+          yeastInputGroup.classList.remove("hidden");
+        } else {
+          yeastInputGroup.classList.add("hidden");
+          inputYeast.value = 0
+          removeParameterByName("yeast")
+          updateValues()
+        }
+
+        if (bakingPowderCheckbox.checked == true) {
+          bakingPowderInputGroup.classList.remove("hidden");
+        } else {
+          bakingPowderInputGroup.classList.add("hidden");
+          inputBakingPowder.value = 0
+          removeParameterByName("bakingpowder")
+          updateValues()
+        }
+
+        if (oilCheckbox.checked == true) {
+          oilInputGroup.classList.remove("hidden");
+        } else {
+          oilInputGroup.classList.add("hidden");
+          inputOil.value = 0
+          removeParameterByName("oil")
+          updateValues()
+        }
+
+        if (sugarCheckbox.checked == true) {
+          sugarInputGroup.classList.remove("hidden");
+        } else {
+          sugarInputGroup.classList.add("hidden");
+          inputSugar.value = 0
+          removeParameterByName("sugar")
+          updateValues()
+        }
+
+        if (butterCheckbox.checked == true) {
+          butterInputGroup.classList.remove("hidden");
+        } else {
+          butterInputGroup.classList.add("hidden");
+          inputButter.value = 0
+          removeParameterByName("butter")
+          updateValues()
+        }
+
+        if (eggsCheckbox.checked == true) {
+          eggsInputGroup.classList.remove("hidden");
+        } else {
+          eggsInputGroup.classList.add("hidden");
+          inputEggs.value = 0
+          removeParameterByName("eggs")
+          updateValues()
+        }
+
+        if (honeyCheckbox.checked == true) {
+          honeyInputGroup.classList.remove("hidden");
+        } else {
+          honeyInputGroup.classList.add("hidden");
+          inputHoney.value = 0
+          removeParameterByName("honey")
+          updateValues()
+        }
+
+        if (leavenCheckbox.checked == true) {
+          leavenInputGroup.classList.remove("hidden");
+        } else {
+          leavenInputGroup.classList.add("hidden");
+          inputLeaven.value = 0
+          removeParameterByName("leaven")
+          updateValues()
+        }
+
+        if (poolishCheckbox.checked == true) {
+          poolishInputGroup.classList.remove("hidden");
+        } else {
+          poolishInputGroup.classList.add("hidden");
+          inputPoolish.value = 0
+          removeParameterByName("poolish")
+          updateValues()
+        }
+
+        if (starterCheckbox.checked == true) {
+          starterInputGroup.classList.remove("hidden");
+        } else {
+          starterInputGroup.classList.add("hidden");
+          inputStarter.value = 0
+          removeParameterByName("starter")
+          updateValues()
+        }
+      }
+      showAndHideInputs()
+
+      function toggleIngredientsList() {
+        var ingredientsList = document.getElementById("modal")
+        var body = document.getElementById("body")
+
+        if (ingredientsList.classList.contains("hidden")) {
+          body.classList.add("noscroll")
+          ingredientsList.classList.remove("hidden")
+        } else {
+          body.classList.remove("noscroll")
+          ingredientsList.classList.add("hidden")
+        }
+      }
+      toggleIngredientsList()
+
+      // Disable double tapping because user-scalable=no doesn't work anymore. Thanks, Apple.
+      var incrementer = document.getElementById("incrementer")
+      incrementer.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+      });
+      var decrementer = document.getElementById("decrementer")
+      decrementer.addEventListener('mousedown', function(e) {
+        e.preventDefault();
+      });
+
+      // Add values to query string
+      function updateQueryStringParam(key, value) {
+        baseUrl = [location.protocol, '//', location.host, location.pathname].join('');
+        urlQueryString = document.location.search;
+        var newParam = key + '=' + value,
+        params = '?' + newParam;
+
+        // If the "search" string exists, then build params from it
+        if (urlQueryString) {
+          keyRegex = new RegExp('([\?&])' + key + '[^&]*');
+          // If param exists already, update it
+          if (urlQueryString.match(keyRegex) !== null) {
+            params = urlQueryString.replace(keyRegex, "$1" + newParam);
+          } else { // Otherwise, add it to end of query string
+            params = urlQueryString + '&' + newParam;
+          }
+        }
+        window.history.replaceState({}, "", baseUrl + params);
+      }
+
+      function removeParameterByName(parameter) {
+        var url=document.location.href;
+        var urlparts= url.split('?');
+
+        if (urlparts.length>=2) {
+          var urlBase=urlparts.shift();
+          var queryString=urlparts.join("?");
+
+          var prefix = encodeURIComponent(parameter)+'=';
+          var pars = queryString.split(/[&;]/g);
+          for (var i= pars.length; i-->0;)
+              if (pars[i].lastIndexOf(prefix, 0)!==-1)
+                  pars.splice(i, 1);
+          url = urlBase+'?'+pars.join('&');
+          window.history.replaceState('',document.title,url); // added this line to push the new url directly to url bar .
+        }
+        return url;
+      }
+
+      // Get values from query string
+      function getParameterByName(name, url) {
+        if (!url) {
+          url = window.location.href;
+        }
+        name = name.replace(/[\[\]]/g, "\\$&");
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+            results = regex.exec(url);
+        if (!results) return null;
+        if (!results[2]) return '';
+        return decodeURIComponent(results[2].replace(/\+/g, " "));
+      }
+
+      document.getElementById("body").classList.remove("hidden")
+    </script>
+
+    <script>
+      (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+      (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+      m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+      })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+      ga('create', 'UA-5104693-24', 'auto');
+      ga('send', 'pageview');
+    </script>
+
+  </body>
+</html>
